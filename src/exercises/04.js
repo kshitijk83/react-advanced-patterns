@@ -6,7 +6,6 @@ import {Switch} from '../switch'
 // we're back to basics here. Rather than compound components,
 // let's use a render prop!
 class Toggle extends React.Component {
-  state = {on: false}
   toggle = () =>
     this.setState(
       ({on}) => ({on: !on}),
@@ -14,6 +13,7 @@ class Toggle extends React.Component {
         this.props.onToggle(this.state.on)
       },
     )
+  state = {on: false, toggle: this.toggle}
   render() {
     const {on} = this.state
     // We want to give rendering flexibility, so we'll be making
@@ -21,18 +21,13 @@ class Toggle extends React.Component {
     // You'll notice the children prop in the Usage component
     // is a function. 🐨 So you can replace this with a call this.props.children()
     // But you'll need to pass it an object with `on` and `toggle`.
-    return <Switch on={on} onClick={this.toggle} />
+    return this.props.children(this.state)
   }
 }
 
-// Don't make changes to the Usage component. It's here to show you how your
-// component is intended to be used and is used in the tests.
-// You can make all the tests pass by updating the Toggle component.
-function Usage({
-  onToggle = (...args) => console.log('onToggle', ...args),
-}) {
+function OriginalToggle(props) {
   return (
-    <Toggle onToggle={onToggle}>
+    <Toggle {...props}>
       {({on, toggle}) => (
         <div>
           {on ? 'The button is on' : 'The button is off'}
@@ -45,6 +40,15 @@ function Usage({
       )}
     </Toggle>
   )
+}
+
+// Don't make changes to the Usage component. It's here to show you how your
+// component is intended to be used and is used in the tests.
+// You can make all the tests pass by updating the Toggle component.
+function Usage({
+  onToggle = (...args) => console.log('onToggle', ...args),
+}) {
+  return <OriginalToggle onToggle={onToggle} />
 }
 Usage.title = 'Render Props'
 
