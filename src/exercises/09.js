@@ -4,7 +4,7 @@ import React from 'react'
 import {Switch} from '../switch'
 
 const callAll = (...fns) => (...args) =>
-  fns.forEach(fn => fn && fn(...args))
+  fns.forEach((fn) => fn && fn(...args))
 
 class Toggle extends React.Component {
   static defaultProps = {
@@ -12,10 +12,14 @@ class Toggle extends React.Component {
     onReset: () => {},
     stateReducer: (state, changes) => changes,
   }
+  static stateTypes = {
+    TOGGLE: 'TOGGLE',
+    RESET: 'RESET',
+  }
   initialState = {on: this.props.initialOn}
   state = this.initialState
   internalSetState(changes, callback) {
-    this.setState(state => {
+    this.setState((state) => {
       // handle function setState call
       const changesObject =
         typeof changes === 'function' ? changes(state) : changes
@@ -26,21 +30,20 @@ class Toggle extends React.Component {
       // property and return an object only if the state changes
       // 💰 to remove the `type`, you can destructure the changes:
       // `{type, ...c}`
-      return Object.keys(reducedChanges).length
-        ? reducedChanges
-        : null
+      const {type, ...changedObj} = reducedChanges
+      return Object.keys(changedObj).length ? changedObj : null
     }, callback)
   }
-  reset = () =>
+  reset = (type = Toggle.stateTypes.RESET) =>
     // 🐨 add a `type` string property to this call
-    this.internalSetState(this.initialState, () =>
+    this.internalSetState({...this.initialState, type}, () =>
       this.props.onReset(this.state.on),
     )
   // 🐨 accept a `type` property here and give it a default value
-  toggle = () =>
+  toggle = ({type = Toggle.stateTypes.TOGGLE}) =>
     this.internalSetState(
       // pass the `type` string to this object
-      ({on}) => ({on: !on}),
+      ({on}) => ({on: !on, type}),
       () => this.props.onToggle(this.state.on),
     )
   getTogglerProps = ({onClick, ...props} = {}) => ({
